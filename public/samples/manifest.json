@@ -1,0 +1,22 @@
+{
+  "harpSamples": [
+    {
+      "id": "musicbox",
+      "name": "Music Box",
+      "filename": "musicbox.ogg",
+      "baseNote": 69
+    },
+    {
+      "id": "lofipiano",
+      "name": "Lo-Fi Piano",
+      "filename": "lofipiano.ogg",
+      "baseNote": 69
+    }
+  ],
+  "voxSample": {
+    "id": "vox",
+    "name": "Vox",
+    "filename": "vox.ogg",
+    "baseNote": 69
+  }
+}

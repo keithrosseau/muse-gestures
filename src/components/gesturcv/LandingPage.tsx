@@ -221,7 +221,7 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
                 centers the icons vertically relative to the button. */}
             <div className="md:col-span-7 md:row-start-2 flex items-center gap-6">
               <a
-                href="#"
+                href="https://github.com/keithrosseau/muse-gestures"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"

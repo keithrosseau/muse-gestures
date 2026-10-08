@@ -1,16 +1,16 @@
 # MUSE GESTURES
 
-Real-time hand-controlled sound installation. Pure browser, no install, no VCV Rack required.
+Real-time hand-controlled sound installation. Pure browser, no installation required.
 
-**Live:** _add your Vercel URL here after deploy_
+**Live:** https://muse-gestures.vercel.app
 
 ## What it is
 
-A webcam tracks your hands via MediaPipe. A custom Web Audio engine translates gestures into a living pad, a pentatonic laser harp, and a looping vocal ostinato — all synthesized in-browser, zero-latency.
+A webcam tracks your hands via MediaPipe. A custom Web Audio engine translates gestures into a living pad, a pentatonic laser harp, and a looped vocal ostinato — all synthesized in-browser, low-latency.
 
 - **Left hand** sculpts the atmosphere: pad filter, vocal ostinato volume, reverb amount
 - **Right hand** plays the melody: pentatonic 5×5 grid, delay/echo amount
-- **6th gesture** (right-hand pinch → tanpura strum) is reserved as a placeholder
+- **6th gesture** (right-hand pinch → tanpura strum) is coming soon!
 
 ## Tech stack
 
@@ -72,20 +72,6 @@ bun run build
 bun run start
 ```
 
-## Add a new sample
-
-1. Drop the audio file (`.wav` / `.mp3` / `.ogg`) into `public/samples/`
-2. Add an entry to `public/samples/manifest.json`:
-   ```json
-   {
-     "harpSamples": [
-       { "id": "mybell", "name": "My Bell", "filename": "mybell.wav", "baseNote": 60 }
-     ],
-     "voxSample": { ... }
-   }
-   ```
-   `baseNote` is the MIDI note of the sample (60 = C4, 69 = A4). The engine transposes relative to it.
-3. Reload — the sample appears in the dropdown automatically.
 
 ## License
 

@@ -1,5 +1,4 @@
 'use client';
-
 // LandingPage: minimalist editorial-style landing for the Gestures → VCV project.
 // Design rules:
 //   - Pure black background, pure white text, no gradients.
@@ -14,11 +13,9 @@
 // (OUTSIDE the max-width container), matching the section layout. This ensures
 // the navbar's left edge aligns exactly with the hero headline's left edge
 // at every viewport width.
-
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, ArrowDown, Github, Instagram, Link as LinkIcon } from 'lucide-react';
 import { useGesturCVStore } from '@/lib/gesturcv-store';
-import type { Language } from '@/lib/i18n';
 
 interface LandingPageProps {
   onLaunch: () => void;
@@ -27,11 +24,16 @@ interface LandingPageProps {
 export function LandingPage({ onLaunch }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [compactLogo, setCompactLogo] = useState(false);
+
   const t = useGesturCVStore((s) => s.t);
   const language = useGesturCVStore((s) => s.language);
   const setLanguage = useGesturCVStore((s) => s.setLanguage);
   const loadSavedLanguage = useGesturCVStore((s) => s.loadSavedLanguage);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const navInnerRef = useRef<HTMLDivElement>(null);
+  const navRightRef = useRef<HTMLDivElement>(null);
 
   // Load the saved language from localStorage after mount (avoids SSR
   // hydration mismatches — server always renders with 'en', client may
@@ -39,6 +41,56 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
   useEffect(() => {
     loadSavedLanguage();
   }, [loadSavedLanguage]);
+
+  // ---------- Navbar wordmark adaptive mode ----------
+  // Dynamically switches between "MUSE GESTURES" and "MG" based on available
+  // horizontal space in the navbar. Uses a ResizeObserver on the navbar's
+  // inner container and measures the right-side section (language selector +
+  // Launch button) to determine if the full wordmark would collide with it.
+  // Hysteresis (20px margin) prevents flickering during gradual resizes.
+  useEffect(() => {
+    let prevCompact = false;
+
+    const check = () => {
+      const nav = navInnerRef.current;
+      const right = navRightRef.current;
+      if (!nav || !right) return;
+
+      const navWidth = nav.clientWidth;
+      const rightWidth = right.offsetWidth;
+      const gap = 24; // Tailwind gap-6 = 1.5rem = 24px
+      const available = navWidth - rightWidth - gap;
+
+      // Measured empirically:
+      //   Full wordmark: logo (20) + gap (10) + "MUSE" (~45) + gap (10) + "GESTURES" (~85) ≈ 170px
+      //   Compact wordmark: logo (20) + gap (10) + "MG" (~25) ≈ 55px
+      const FULL_WORDMARK = 170;
+      const HYSTERESIS = 20;
+
+      let nextCompact = prevCompact;
+      if (!prevCompact && available < FULL_WORDMARK) {
+        nextCompact = true;
+      } else if (prevCompact && available > FULL_WORDMARK + HYSTERESIS) {
+        nextCompact = false;
+      }
+
+      if (nextCompact !== prevCompact) {
+        prevCompact = nextCompact;
+        setCompactLogo(nextCompact);
+      }
+    };
+
+    // Initial check after layout is stable.
+    const timer = setTimeout(check, 0);
+
+    const observer = new ResizeObserver(check);
+    if (navInnerRef.current) observer.observe(navInnerRef.current);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, []);
 
   // Video autoplay — Safari is extremely strict. We need:
   // 1. preload="auto" + muted + playsInline on the <video> tag (done above)
@@ -73,6 +125,7 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
       window.removeEventListener('keydown', unmute, true);
       window.removeEventListener('touchstart', unmute, true);
     };
+
     window.addEventListener('click', unmute, true);
     window.addEventListener('keydown', unmute, true);
     window.addEventListener('touchstart', unmute, true);
@@ -102,26 +155,42 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
           borderBottom: scrolled ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
         }}
       >
-        <div className="max-w-[1400px] mx-auto py-6 flex items-center justify-between">
-          {/* Wordmark — SVG logo placeholder + project name */}
-          <div className="flex items-center gap-2.5">
-            {/* Logo placeholder — replace src with your actual logo SVG.
-                Sized to match the text height (12px text → 16px logo). */}
+        <div
+          ref={navInnerRef}
+          className="max-w-[1400px] mx-auto py-6 flex items-center justify-between"
+        >
+          {/* Wordmark — SVG logo + project name.
+              Switches between full "MUSE GESTURES" and compact "MG" based on
+              available space (see useEffect above). The `min-w-0` on the
+              flex container allows it to shrink below its intrinsic width
+              without breaking the flex layout. */}
+          <div className="flex items-center gap-2.5 min-w-0">
             <img
               src="/logo.svg"
               alt="MUSE GESTURES logo"
-              className="h-5 w-5"
+              className="h-5 w-5 flex-shrink-0"
             />
-            <span className="text-[12px] tracking-[0.25em] uppercase font-light text-white/60">
-              MUSE
-            </span>
-            <span className="text-[12px] tracking-[0.25em] uppercase font-light text-white/60">
-              GESTURES
-            </span>
+            {compactLogo ? (
+              <span className="text-[12px] tracking-[0.25em] uppercase font-light text-white/60">
+                MG
+              </span>
+            ) : (
+              <>
+                <span className="text-[12px] tracking-[0.25em] uppercase font-light text-white/60">
+                  MUSE
+                </span>
+                <span className="text-[12px] tracking-[0.25em] uppercase font-light text-white/60">
+                  GESTURES
+                </span>
+              </>
+            )}
           </div>
 
           {/* Right side: language toggle + launch */}
-          <div className="flex items-center gap-6">
+          <div
+            ref={navRightRef}
+            className="flex items-center gap-6 flex-shrink-0"
+          >
             {/* ENG / RU toggle — inline on desktop, compact dropdown on mobile */}
             <div className="hidden sm:flex items-center gap-2">
               <LangButton
@@ -217,7 +286,6 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
             className="block"
             style={{
               width: 'min(100vw, 1400px)',
-              //maxWidth: '960px',
               height: 'auto',
               transform: 'translateY(-50px)',
               aspectRatio: '16 / 9',
@@ -231,6 +299,7 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
             style={{ zIndex: 0 }}
           />
         </div>
+
         <div className="max-w-[1400px] mx-auto w-full relative" style={{ zIndex: 1 }}>
           {/* Section number */}
           <div className="flex items-center gap-4 mb-12">
@@ -436,7 +505,6 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               loading="eager"
             />
           </figure>
-
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ paddingLeft: '18px' }}>
             <p className="text-xs font-light text-white/40">
               {t.gesturesCaption}
@@ -464,7 +532,6 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               {t.finalLabel}
             </span>
           </div>
-
           <div className="text-center max-w-3xl mx-auto">
             <h2
               className="font-extrabold leading-[0.95] tracking-[-0.02em] text-white mb-8"
@@ -475,7 +542,6 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
             <p className="text-base md:text-lg font-light text-white/60 leading-relaxed mb-12 max-w-xl mx-auto">
               {t.finalBody}
             </p>
-
             <button
               onClick={onLaunch}
               className="group inline-flex items-center gap-4 border border-white px-12 py-6 hover:bg-white hover:text-black transition-colors duration-200"

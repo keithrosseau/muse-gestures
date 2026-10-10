@@ -26,6 +26,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onLaunch }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const t = useGesturCVStore((s) => s.t);
   const language = useGesturCVStore((s) => s.language);
   const setLanguage = useGesturCVStore((s) => s.setLanguage);
@@ -121,8 +122,8 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
 
           {/* Right side: language toggle + launch */}
           <div className="flex items-center gap-6">
-            {/* ENG / RU toggle — slightly larger */}
-            <div className="flex items-center gap-2">
+            {/* ENG / RU toggle — inline on desktop, compact dropdown on mobile */}
+            <div className="hidden sm:flex items-center gap-2">
               <LangButton
                 label="ENG"
                 active={language === 'en'}
@@ -134,6 +135,53 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
                 active={language === 'ru'}
                 onClick={() => setLanguage('ru')}
               />
+            </div>
+
+            {/* Mobile: compact language dropdown (saves horizontal space) */}
+            <div className="sm:hidden relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1 text-[12px] tracking-[0.25em] uppercase font-light text-white/80 hover:text-white border border-white/20 hover:border-white/30 px-2 py-1 transition-colors"
+              >
+                <span>{language.toUpperCase()}</span>
+                <svg
+                  className={`w-3 h-3 transition-transform ${langDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="square" d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {langDropdownOpen && (
+                <>
+                  {/* Click-outside overlay */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setLangDropdownOpen(false)}
+                  />
+                  {/* Dropdown menu — matches SampleSelector styling */}
+                  <div className="absolute top-full right-0 mt-px bg-black border border-white/20 z-50 min-w-[80px]">
+                    <button
+                      onClick={() => { setLanguage('en'); setLangDropdownOpen(false); }}
+                      className={`block w-full text-center px-3 py-2.5 text-[11px] tracking-[0.25em] uppercase font-light border-b border-white/10 last:border-b-0 transition-colors ${
+                        language === 'en' ? 'text-white bg-white/5' : 'text-white/50 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      ENG
+                    </button>
+                    <button
+                      onClick={() => { setLanguage('ru'); setLangDropdownOpen(false); }}
+                      className={`block w-full text-center px-3 py-2.5 text-[11px] tracking-[0.25em] uppercase font-light border-b border-white/10 last:border-b-0 transition-colors ${
+                        language === 'ru' ? 'text-white bg-white/5' : 'text-white/50 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      RU
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
             <button

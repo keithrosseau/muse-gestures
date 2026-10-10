@@ -1,13 +1,13 @@
-<h1 align="center">Muse Gestures</h1>
+<h1 align="center">MUSE GESTURES</h1>
 
 <p align="center">
   <sup>Real-time hand-controlled sound installation. Pure browser, no installation required.</sup>
 </p>
 
-<h4 align="center"><a href="https://muse-gestures.vercel.app">Try it yourself</a></h4>
+<h4 align="center"><a href="https://musegestures.space">Try it yourself</a></h4>
 
 <p align="center">
-  <a href="https://muse-gestures.vercel.app">
+  <a href="https://musegestures.space">
     <img src="./public/preview.png" alt="MUSE GESTURES preview">
   </a>
 </p>

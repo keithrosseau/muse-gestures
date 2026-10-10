@@ -193,9 +193,10 @@ export const translations: Record<Language, Translation> = {
     navLangRu: 'RU',
 
     heroLabel: 'Инсталляция',
-    // \u00A0 = non-breaking space. Keeps "Управляй" and "звуком" on the same
-    // line so the headline stays on exactly 2 lines like the English version.
-    heroTitleLine1: 'Управляй\u00A0звуком',
+    // NBSP removed — wrapping is controlled by CSS (whitespace-normal
+    // sm:whitespace-nowrap) in LandingPage.tsx, so "звуком" wraps on
+    // mobile but stays on one line on desktop.
+    heroTitleLine1: 'Управляй звуком',
     heroTitleLine2: 'своими руками.',
     heroBody:
       'Звуковая инсталляция в реальном времени, где движение становится музыкой. Веб-камера отслеживает ваши руки, собственный движок переводит жесты в живой пэд, пентатоническую лазерную арфу и вокальное остинато — всё в браузере.',
@@ -235,7 +236,7 @@ export const translations: Record<Language, Translation> = {
     openPdf: 'Открыть PDF',
 
     finalLabel: 'Начать',
-    finalTitle: 'Готовы\u00A0играть?',
+    finalTitle: 'Готовы играть?',
     finalBody:
       'Потребуется доступ к камере. Звуковой движок запускается по вашему клику — мы требуем жеста пользователя перед воспроизведением звука.',
     finalCta: 'Запустить камеру',

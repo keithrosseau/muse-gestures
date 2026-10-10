@@ -249,9 +249,9 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               fontWeight: 800,
             }}
           >
-            {t.heroTitleLine1}
+            <span className="whitespace-normal sm:whitespace-nowrap">{t.heroTitleLine1}</span>
             <br />
-            {t.heroTitleLine2}
+            <span className="whitespace-normal sm:whitespace-nowrap">{t.heroTitleLine2}</span>
           </h1>
 
           {/* Sub */}
@@ -470,7 +470,7 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               className="font-extrabold leading-[0.95] tracking-[-0.02em] text-white mb-8"
               style={{ fontSize: 'clamp(2.5rem, 7vw, 7rem)', fontWeight: 800 }}
             >
-              {t.finalTitle}
+              <span className="whitespace-normal sm:whitespace-nowrap">{t.finalTitle}</span>
             </h2>
             <p className="text-base md:text-lg font-light text-white/60 leading-relaxed mb-12 max-w-xl mx-auto">
               {t.finalBody}

@@ -288,7 +288,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="gpu" className="text-xs font-light text-white/80">
-                      GPU delegate
+                      CPU/GPU delegate
                     </Label>
                     <Switch
                       id="gpu"

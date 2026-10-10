@@ -250,7 +250,7 @@ export default function Home() {
                 The gear toggle button lives outside the sidebar (below) so
                 it stays in the exact same screen position whether the
                 sidebar is open or closed — only its rotation changes. */}
-            <div className="flex items-center justify-center px-5 py-4 border-b border-white/10">
+            <div className="flex items-center justify-center px-5 h-[50px] border-b border-white/10">
               <span className="text-[11px] tracking-[0.3em] uppercase font-light text-white/70">
                 {t.settings}
               </span>
@@ -364,7 +364,11 @@ export default function Home() {
             rotate-90 when open — smooth 300ms ease-out interpolation. */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute top-4 left-4 bg-black/90 backdrop-blur-md border border-white/15 w-12.5 h-12.5 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 hover:bg-black transition-colors z-30"
+          className={`absolute top-4 left-4 bg-black/90 backdrop-blur-md w-[50px] h-[50px] flex items-center justify-center text-white/70 hover:text-white hover:bg-black transition-colors z-30 ${
+            sidebarOpen
+              ? 'border-t border-l border-white/15'
+              : 'border border-white/15 hover:border-white/30'
+          }`}
           aria-label={sidebarOpen ? 'Close settings panel' : 'Open settings panel'}
         >
           <Settings

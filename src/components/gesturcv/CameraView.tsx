@@ -74,7 +74,6 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
 
   // ---------- Camera init ----------
   const startCamera = useCallback(async () => {
-    setErrorMsg(null);
     try {
       // Request the camera's NATIVE resolution — let the webcam give us
       // whatever it actually is (1920×1080 on a typical MacBook, 1280×720
@@ -89,6 +88,12 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
         },
         audio: false,
       });
+      // NOTE: clear the previous error AFTER the first await.
+      // If we cleared it synchronously at the top of startCamera, React 19's
+      // react-hooks/set-state-in-effect rule would flag this function when it
+      // is invoked directly from a useEffect (cascading render). Moving the
+      // setState past an await breaks that synchronous link.
+      setErrorMsg(null);
       const video = videoRef.current;
       if (!video) return;
       video.srcObject = stream;
@@ -357,7 +362,6 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
         rafRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -356,15 +356,15 @@ export default function Home() {
           </aside>
         )}
 
-        {/* Single gear toggle button — always in the exact same screen
+        {/* Single gear toggle settings button — always in the exact same screen
             position (top-4 left-4). Slightly larger than before (w-11 h-11
-            = 44px) so the gear has more breathing room. Border matches the
+            = 50x) so the gear has more breathing room. Border matches the
             sidebar border exactly (border-white/15) so the two outlines
             visually belong together. Rotation: rotate-0 when closed,
             rotate-90 when open — smooth 300ms ease-out interpolation. */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute top-4 left-4 bg-black/90 backdrop-blur-md border border-white/15 w-11 h-11 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 hover:bg-black transition-colors z-30"
+          className="absolute top-4 left-4 bg-black/90 backdrop-blur-md border border-white/15 w-12.5 h-12.5 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 hover:bg-black transition-colors z-30"
           aria-label={sidebarOpen ? 'Close settings panel' : 'Open settings panel'}
         >
           <Settings

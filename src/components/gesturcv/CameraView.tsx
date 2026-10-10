@@ -1,5 +1,4 @@
 'use client';
-
 // CameraView: the heart of the web app.
 // - Holds the <video> element bound to getUserMedia().
 // - Runs a requestAnimationFrame loop that:
@@ -12,7 +11,6 @@
 //
 // The component is intentionally self-contained: page.tsx just mounts it and
 // passes the AudioEngine ref + a few props.
-
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { HandTracker } from '@/lib/handtracking/HandTracker';
 import { computeHandFeatures, channelsFromHands, SignalSmoother, type HandsData } from '@/lib/handtracking/features';
@@ -42,7 +40,6 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
   const trackerRef = useRef<HandTracker | null>(null);
   const harpRef = useRef<LaserHarp>(new LaserHarp());
   const smootherRef = useRef<SignalSmoother>(new SignalSmoother(0.75));
@@ -68,6 +65,7 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
   const mirrorRef = useRef(mirror);
   const audioStartedRef = useRef(audioStarted);
   const activeSampleRef = useRef(activeSample);
+
   useEffect(() => { mirrorRef.current = mirror; }, [mirror]);
   useEffect(() => { audioStartedRef.current = audioStarted; }, [audioStarted]);
   useEffect(() => { activeSampleRef.current = activeSample; }, [activeSample]);
@@ -88,16 +86,20 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
         },
         audio: false,
       });
+
       // NOTE: clear the previous error AFTER the first await.
       // If we cleared it synchronously at the top of startCamera, React 19's
       // react-hooks/set-state-in-effect rule would flag this function when it
       // is invoked directly from a useEffect (cascading render). Moving the
       // setState past an await breaks that synchronous link.
       setErrorMsg(null);
+
       const video = videoRef.current;
       if (!video) return;
+
       video.srcObject = stream;
       await video.play();
+
       setCameraReady(true);
       setTrackingReady(true);
     } catch (err) {
@@ -116,10 +118,12 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
   useEffect(() => {
     const tracker = new HandTracker({ swapHands, gpu: gpuDelegate });
     trackerRef.current = tracker;
+
     tracker.waitUntilReady().catch((e) => {
       console.error('HandTracker init failed:', e);
       setTrackingError(`Hand tracker init failed: ${(e as Error).message}`);
     });
+
     return () => {
       tracker.close();
       trackerRef.current = null;
@@ -128,6 +132,7 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
 
   // Auto-start camera on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void startCamera();
     return () => {
       const v = videoRef.current;
@@ -146,13 +151,16 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
   useEffect(() => {
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
+
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const container = containerRef.current;
       const tracker = trackerRef.current;
+
       if (!video || !canvas || !tracker || !container) {
         return;
       }
+
       // Guard: skip detection while the HandTracker is being re-created
       // (e.g. during GPU↔CPU delegate switch). This prevents crashes from
       // calling detectForVideo on a closed/not-yet-ready landmarker.
@@ -175,6 +183,7 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
       // canvas will line up with what the user sees.
       let dispW: number;
       let dispH: number;
+
       if (containerW / containerH > aspect) {
         // Container is wider than video → letterbox left/right.
         dispH = containerH;
@@ -184,6 +193,7 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
         dispW = containerW;
         dispH = dispW / aspect;
       }
+
       const offsetX = (containerW - dispW) / 2;
       const offsetY = (containerH - dispH) / 2;
 
@@ -215,14 +225,17 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
       const handsData: HandsData = {};
       const handLandmarksMap: { Left?: typeof trackedHands[number]['landmarks']; Right?: typeof trackedHands[number]['landmarks'] } = {};
       let harpTip: [number, number] | null = null;
+
       // Per user spec: laser harp is played by the RIGHT hand's index fingertip.
       const harpLabel = 'Right';
+
       // When the camera image is mirrored for display, the fingertip's
       // on-screen X is (1 - lm.x) * width. We must use the same transform
       // for hit-testing against the grid, otherwise the active cell drifts
       // opposite to where the user visually sees their finger.
       const mirrorNow = mirrorRef.current;
       const tipX = (lmX: number) => (mirrorNow ? (1 - lmX) * width : lmX * width);
+
       for (const h of trackedHands) {
         handsData[h.label] = computeHandFeatures(h.landmarks, aspect);
         handLandmarksMap[h.label] = h.landmarks;
@@ -246,10 +259,12 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
         engine.setPadPresence(values[0]);    // left_presence — gate pad on/off
         engine.setPadOpenness(values[6]);    // left_openness — pad filter cutoff
         engine.setReverbWet(values[3]);      // left_scale — reverb amount
+
         // Vox volume from left-hand roll.
         // roll=0 (hand vertical, fingers up) → gain=0 (silent)
         // roll=1 (hand rotated 90° to the right from user's perspective) → gain=1 (full)
         engine.setVoxGain(values[5]);        // left_roll — vox volume
+
         // RIGHT hand → harp delay
         engine.setDelayWet(values[14]);      // right_openness — delay/echo
         // right_pinch (values[12]) is reserved for the future tanpura gesture (#6, deferred).
@@ -265,6 +280,7 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
           harpXy = [(fx - grid.x0) / gcell, (fy - grid.y0) / gcell];
         }
       }
+
       const harpRes = harpRef.current.update(harpXy, dt);
 
       // Gate transitions
@@ -351,11 +367,13 @@ export function CameraView({ audioEngineRef, swapHands, mirror, gpuDelegate }: C
       if (useGesturCVStore.getState().showChannelPanel) {
         drawChannelPanel(ctx, values, width);
       }
+
       // Note: no FPS / sample overlay on the canvas — the top navbar already
       // shows the active sample, and FPS is shown in the sidebar status panel.
     };
 
     rafRef.current = requestAnimationFrame(loop);
+
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -420,16 +438,19 @@ function drawHarpGrid(
   side: number,
 ) {
   const cell = side / HARP_GRID_COLS;
+
   // Active cell fill + border + note name
   if (activeCol !== null && activeRow !== null) {
     const cx0 = x0 + activeCol * cell;
     const cy0 = y0 + activeRow * cell;
     ctx.fillStyle = 'rgba(40, 30, 5, 0.6)';
     ctx.fillRect(cx0, cy0, cell, cell);
+
     // Soft gold border for the active cell.
     ctx.strokeStyle = 'rgba(255, 215, 130, 0.95)';
     ctx.lineWidth = 2;
     ctx.strokeRect(cx0, cy0, cell, cell);
+
     const midi = cellToMidi(activeCol, activeRow);
     const name = midiToName(midi);
     ctx.fillStyle = 'rgba(255, 235, 200, 0.98)';
@@ -488,6 +509,7 @@ function drawHand(
     ctx.lineTo(px(lb.x), py(lb.y));
     ctx.stroke();
   }
+
   ctx.fillStyle = dotColor;
   for (const lm of landmarks) {
     ctx.beginPath();
@@ -501,12 +523,15 @@ function drawChannelPanel(ctx: CanvasRenderingContext2D, values: number[], width
   const panelH = 8 * 26 + 30;
   const x = width - panelW - 12;
   const y = 12;
+
   ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
   ctx.fillRect(x, y, panelW, panelH);
+
   ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
   ctx.font = '11px ui-monospace, Menlo, monospace';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
+
   // Left hand (top half), Right hand (bottom half) — but to keep it compact,
   // we'll show 8 left channels on the left column, 8 right on the right column.
   const colW = (panelW - 24) / 2;
@@ -515,9 +540,11 @@ function drawChannelPanel(ctx: CanvasRenderingContext2D, values: number[], width
     const row = i % 8;
     const cx = x + 12 + col * colW;
     const cy = y + 24 + row * 26;
+
     const name = CHANNEL_NAMES[i].replace('left_', 'L_').replace('right_', 'R_');
     ctx.fillStyle = 'rgba(230, 230, 230, 0.95)';
     ctx.fillText(name.slice(0, 12), cx, cy);
+
     // bar
     const barX = cx;
     const barY = cy + 8;
@@ -525,6 +552,7 @@ function drawChannelPanel(ctx: CanvasRenderingContext2D, values: number[], width
     const barH = 6;
     ctx.fillStyle = 'rgba(45, 45, 45, 0.95)';
     ctx.fillRect(barX, barY, barW, barH);
+
     // Color convention: LEFT hand = green, RIGHT hand = blue.
     ctx.fillStyle = col === 0
       ? 'rgba(80, 220, 120, 0.95)'   // green for left channels
